@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JB Base FG Tracking</title>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      padding: 20px 16px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header h1 { font-size: 20px; font-weight: 600; }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    
+    .nav-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border: none;
+      background: none;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    
+    .nav-btn.active { color: #2563eb; font-weight: 600; }
+    .nav-btn svg { width: 24px; height: 24px; }
+    
+    .section { display: none; padding: 16px; }
+    .section.active { display: block; }
+    
+    .sub-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      background: white;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    .sub-tab {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #f1f5f9;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    
+    .sub-tab.active {
+      background: #2563eb;
+      color: white;
+    }
+    
+    .base-content { display: none; }
+    .base-content.active { display: block; }
+    
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-outline { background: white; border: 2px solid #e2e8f0; color: #475569; }
+    
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #475569; }
+    
+    .form-input, .form-select {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+    
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+    
+    .counter-box {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      padding: 24px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .counter-box.inactive { background: #94a3b8; }
+    .counter-value { font-size: 56px; font-weight: 700; }
+    .counter-label { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+    
+    .running-no-display {
+      background: #eff6ff;
+      border: 2px dashed #2563eb;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 700;
+      color: #2563eb;
+      font-size: 20px;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    
+    .running-no-display.empty {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+    
+    .scan-list { max-height: 300px; overflow-y: auto; }
+    
+    .scan-item {
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .scan-item-content { flex: 1; overflow: hidden; }
+    .scan-item-no { font-weight: 600; color: #2563eb; font-size: 14px; }
+    .scan-item-data { font-size: 12px; color: #64748b; word-break: break-all; margin-top: 4px; }
+    .scan-item-time { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+    
+    .remove-btn {
+      background: #fee2e2;
+      color: #ef4444;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 12px;
+    }
+    
+    .alert {
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .alert-success { background: #d1fae5; color: #065f46; }
+    .alert-error { background: #fee2e2; color: #991b1b; }
+    .alert-warning { background: #fef3c7; color: #92400e; }
+    
+    .empty-msg { text-align: center; padding: 40px 20px; color: #94a3b8; }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    
+    .pallet-group {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .pallet-group-header {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 15px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .pallet-item {
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: 2px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+    
+    .pallet-item:hover { border-color: #2563eb; }
+    .pallet-item.selected { background: #eff6ff; border-color: #2563eb; }
+    .pallet-item.assigned { background: #f0fdf4; border-color: #10b981; cursor: default; }
+    
+    .pallet-item-header { display: flex; justify-content: space-between; align-items: center; }
+    .pallet-item-no { font-weight: 600; color: #1e293b; }
+    .pallet-item-data { font-size: 12px; color: #64748b; margin-top: 6px; word-break: break-all; }
+    .pallet-item-invoice { font-size: 12px; color: #10b981; font-weight: 600; }
+    
+    .selection-bar {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: none;
+    }
+    
+    .selection-bar.show { display: block; }
+    
+    .invoice-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-left: 4px solid #2563eb;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    #reader video { width: 100% !important; border-radius: 12px; }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>📦 JB Base FG Tracking</h1>
+  </div>
+  
+  <!-- BOX SCAN -->
+  <div id="sec-box" class="section active">
+    <div class="sub-tabs">
+      <button class="sub-tab active" id="tab-35" onclick="switchBaseTab('35')">3.5" Base</button>
+      <button class="sub-tab" id="tab-25" onclick="switchBaseTab('25')">2.5" Base</button>
+    </div>
+    
+    <!-- 3.5" Base Content -->
+    <div id="base-35-content" class="base-content active">
+      <div class="card">
+        <div class="card-title">📦 3.5" Base Box Scanning</div>
+        
+        <div id="box-counter-35" class="counter-box inactive">
+          <div class="counter-value" id="box-count-35">0</div>
+          <div class="counter-label">Boxes Scanned (Max 64)</div>
+        </div>
+        
+        <div id="box-running-35" class="running-no-display empty">Tap "Start Session" to begin</div>
+        
+        <div id="box-reader-35"></div>
+        
+        <div id="box-alert-35" class="alert" style="display:none;"></div>
+        
+        <div id="box-start-view-35">
+          <button class="btn btn-primary" onclick="startBoxSession('35')">▶ Start New Session</button>
+        </div>
+        
+        <div id="box-active-view-35" style="display:none;">
+          <button class="btn btn-primary" id="box-cam-btn-35" onclick="toggleBoxCamera('35')">📷 Start Camera</button>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-success" onclick="submitBoxSession('35')">✓ Submit</button>
+            <button class="btn btn-danger" onclick="cancelBoxSession('35')">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card" id="box-list-card-35" style="display:none;">
+        <div class="card-title">Scanned Boxes <span class="badge badge-warning">Unsaved</span></div>
+        <div id="box-list-35" class="scan-list"></div>
+      </div>
+    </div>
+    
+    <!-- 2.5" Base Content -->
+    <div id="base-25-content" class="base-content">
+      <div class="card">
+        <div class="card-title">📦 2.5" Base Box Scanning</div>
+        
+        <div id="box-counter-25" class="counter-box inactive">
+          <div class="counter-value" id="box-count-25">0</div>
+          <div class="counter-label">Boxes Scanned (Max 60)</div>
+        </div>
+        
+        <div id="box-running-25" class="running-no-display empty">Tap "Start Session" to begin</div>
+        
+        <div id="box-reader-25"></div>
+        
+        <div id="box-alert-25" class="alert" style="display:none;"></div>
+        
+        <div id="box-start-view-25">
+          <button class="btn btn-primary" onclick="startBoxSession('25')">▶ Start New Session</button>
+        </div>
+        
+        <div id="box-active-view-25" style="display:none;">
+          <button class="btn btn-primary" id="box-cam-btn-25" onclick="toggleBoxCamera('25')">📷 Start Camera</button>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-success" onclick="submitBoxSession('25')">✓ Submit</button>
+            <button class="btn btn-danger" onclick="cancelBoxSession('25')">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card" id="box-list-card-25" style="display:none;">
+        <div class="card-title">Scanned Boxes <span class="badge badge-warning">Unsaved</span></div>
+        <div id="box-list-25" class="scan-list"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- PALLET SCAN -->
+  <div id="sec-pallet" class="section">
+    <div class="card">
+      <div class="card-title">🎯 Pallet Scanning</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:16px;">1 pallet per running number</div>
+      
+      <div class="form-group">
+        <label class="form-label">Select Running Number</label>
+        <select id="pallet-running-select" class="form-select" onchange="onPalletRunningSelect()">
+          <option value="">-- Select Running Number --</option>
+        </select>
+      </div>
+      
+      <div id="pallet-box-info" style="display:none;">
+        <div class="counter-box" style="margin-bottom:16px;">
+          <div class="counter-value" id="pallet-box-count">0</div>
+          <div class="counter-label">Boxes in this Running No.</div>
+        </div>
+      </div>
+      
+      <div id="pallet-reader"></div>
+      
+      <div id="pallet-alert" class="alert" style="display:none;"></div>
+      
+      <div id="pallet-start-view">
+        <button class="btn btn-primary" id="pallet-scan-btn" onclick="startPalletScan()" disabled>▶ Start Pallet Scan</button>
+      </div>
+      
+      <div id="pallet-active-view" style="display:none;">
+        <button class="btn btn-primary" id="pallet-cam-btn" onclick="togglePalletCamera()">📷 Start Camera</button>
+        <div class="btn-row" style="margin-top:8px;">
+          <button class="btn btn-success" onclick="submitPalletSession()">✓ Submit</button>
+          <button class="btn btn-danger" onclick="cancelPalletSession()">✕ Cancel</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card" id="pallet-box-list-card" style="display:none;">
+      <div class="card-title">📦 Box Data for this Running No.</div>
+      <div id="pallet-box-list" class="scan-list" style="max-height:200px;"></div>
+    </div>
+    
+    <div class="card" id="pallet-session-card" style="display:none;">
+      <div class="card-title">Scanned Pallet <span class="badge badge-warning">Unsaved</span></div>
+      <div id="pallet-session-list" class="scan-list"></div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">✓ Assigned Pallet</div>
+      <div id="saved-pallet-list"></div>
+    </div>
+  </div>
+  
+  <!-- INVOICE -->
+  <div id="sec-invoice" class="section">
+    <div class="selection-bar" id="invoice-selection-bar">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <span style="font-weight:600;color:#2563eb;" id="selected-count">0</span>
+          <span style="color:#64748b;"> pallets selected</span>
+        </div>
+        <button class="btn btn-outline" style="width:auto;padding:8px 16px;margin:0;" onclick="clearSelection()">Clear</button>
+      </div>
+      
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">Invoice Number *</label>
+        <input type="text" id="invoice-no-input" class="form-input" placeholder="Enter Invoice Number">
+      </div>
+      
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">PO Number *</label>
+        <input type="text" id="po-no-input" class="form-input" placeholder="Enter PO Number">
+      </div>
+      
+      <button class="btn btn-success" onclick="assignInvoice()">✓ Assign Invoice</button>
+    </div>
+    
+    <div id="invoice-alert" class="alert" style="display:none;"></div>
+    
+    <div class="card">
+      <div class="card-title">📦 All Pallets</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:16px;">Tap to select pallets, then assign invoice number</div>
+      <div id="all-pallets-list"></div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">📋 Invoice Summary</div>
+      <div id="invoice-summary-list"></div>
+    </div>
+  </div>
+  
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-box" onclick="showSection('box')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Box Scan
+    </button>
+    <button class="nav-btn" id="nav-pallet" onclick="showSection('pallet')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="22" height="12" rx="2"/><path d="M1 10h22"/><path d="M8 6v12"/><path d="M16 6v12"/></svg>
+      Pallet Scan
+    </button>
+    <button class="nav-btn" id="nav-invoice" onclick="showSection('invoice')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Invoice
+    </button>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  
+  <script>
+    // ==================== CONFIGURATION ====================
+    // IMPORTANT: Replace this with your Apps Script deployment URL
+    var API_URL = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE';
+    
+    // ==================== STATE ====================
+    var boxScanner35 = null;
+    var boxScanner25 = null;
+    var palletScanner = null;
+    var boxSession35 = { active: false, runningNo: '', scans: [], scanSet: {} };
+    var boxSession25 = { active: false, runningNo: '', scans: [], scanSet: {} };
+    var palletSession = { active: false, runningNo: '', scans: [], scanSet: {} };
+    var selectedPallets = [];
+    var currentPalletRunning = '';
+    var currentBaseTab = '35';
+    
+    var BASE_CONFIG = {
+      '35': { maxBoxes: 64, label: '3.5" Base' },
+      '25': { maxBoxes: 60, label: '2.5" Base' }
+    };
+    
+    // ==================== API CALLS ====================
+    async function apiCall(action, params = {}) {
+      params.action = action;
+      
+      try {
+        var response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(params)
+        });
+        
+        var result = await response.json();
+        return result;
+      } catch (err) {
+        console.error('API Error:', err);
+        return { success: false, error: err.message };
+      }
+    }
+    
+    // ==================== UTILITIES ====================
+    function showAlert(id, msg, type) {
+      var el = document.getElementById(id);
+      el.textContent = msg;
+      el.className = 'alert alert-' + type;
+      el.style.display = 'block';
+      setTimeout(function() { el.style.display = 'none'; }, 3000);
+    }
+    
+    function beep(freq, dur) {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq || 800;
+        gain.gain.value = 0.3;
+        osc.start();
+        setTimeout(function() { osc.stop(); }, dur || 100);
+      } catch(e) {}
+    }
+    
+    function formatTime(ts) {
+      if (!ts) return '';
+      return new Date(ts).toLocaleString();
+    }
+    
+    // ==================== NAVIGATION ====================
+    function switchBaseTab(size) {
+      stopAllCameras();
+      currentBaseTab = size;
+      
+      document.getElementById('tab-35').classList.remove('active');
+      document.getElementById('tab-25').classList.remove('active');
+      document.getElementById('tab-' + size).classList.add('active');
+      
+      document.getElementById('base-35-content').classList.remove('active');
+      document.getElementById('base-25-content').classList.remove('active');
+      document.getElementById('base-' + size + '-content').classList.add('active');
+    }
+    
+    function showSection(name) {
+      stopAllCameras();
+      
+      var sections = document.querySelectorAll('.section');
+      for (var i = 0; i < sections.length; i++) sections[i].classList.remove('active');
+      
+      var navBtns = document.querySelectorAll('.nav-btn');
+      for (var i = 0; i < navBtns.length; i++) navBtns[i].classList.remove('active');
+      
+      document.getElementById('sec-' + name).classList.add('active');
+      document.getElementById('nav-' + name).classList.add('active');
+      
+      if (name === 'pallet') loadPalletRunningNumbers();
+      else if (name === 'invoice') {
+        loadAllPalletsForInvoice();
+        loadInvoiceSummary();
+      }
+    }
+    
+    function stopAllCameras() {
+      if (boxScanner35) { try { boxScanner35.stop(); } catch(e) {} boxScanner35 = null; }
+      if (boxScanner25) { try { boxScanner25.stop(); } catch(e) {} boxScanner25 = null; }
+      if (palletScanner) { try { palletScanner.stop(); } catch(e) {} palletScanner = null; }
+      document.getElementById('box-reader-35').innerHTML = '';
+      document.getElementById('box-reader-25').innerHTML = '';
+      document.getElementById('pallet-reader').innerHTML = '';
+    }
+    
+    // ==================== BOX SCAN ====================
+    function getBoxSession(size) { return size === '35' ? boxSession35 : boxSession25; }
+    function setBoxSession(size, session) { if (size === '35') boxSession35 = session; else boxSession25 = session; }
+    function getBoxScanner(size) { return size === '35' ? boxScanner35 : boxScanner25; }
+    function setBoxScanner(size, scanner) { if (size === '35') boxScanner35 = scanner; else boxScanner25 = scanner; }
+    
+    async function startBoxSession(size) {
+      var config = BASE_CONFIG[size];
+      var btn = document.querySelector('#box-start-view-' + size + ' .btn-primary');
+      btn.disabled = true;
+      btn.textContent = '⏳ Starting...';
+      
+      var result = await apiCall('startBoxSession', { baseSize: size });
+      
+      if (result.success) {
+        var newSession = { active: true, runningNo: result.runningNo, scans: [], scanSet: {}, baseSize: size };
+        setBoxSession(size, newSession);
+        
+        document.getElementById('box-running-' + size).textContent = result.runningNo;
+        document.getElementById('box-running-' + size).classList.remove('empty');
+        document.getElementById('box-counter-' + size).classList.remove('inactive');
+        document.getElementById('box-start-view-' + size).style.display = 'none';
+        document.getElementById('box-active-view-' + size).style.display = 'block';
+        document.getElementById('box-list-card-' + size).style.display = 'block';
+        updateBoxUI(size);
+        showAlert('box-alert-' + size, 'Session started: ' + result.runningNo, 'success');
+        toggleBoxCamera(size);
+      } else {
+        showAlert('box-alert-' + size, 'Error: ' + result.error, 'error');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '▶ Start New Session';
+    }
+    
+    function toggleBoxCamera(size) {
+      var container = document.getElementById('box-reader-' + size);
+      var btn = document.getElementById('box-cam-btn-' + size);
+      var scanner = getBoxScanner(size);
+      
+      if (scanner) {
+        try { scanner.stop(); } catch(e) {}
+        setBoxScanner(size, null);
+        container.innerHTML = '';
+        btn.textContent = '📷 Start Camera';
+        return;
+      }
+      
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          stream.getTracks().forEach(function(track) { track.stop(); });
+          
+          container.innerHTML = '<div id="box-scanner-el-' + size + '"></div>';
+          var newScanner = new Html5Qrcode("box-scanner-el-" + size);
+          
+          newScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 }, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] },
+            function(data) { onBoxScan(data, size); },
+            function() {}
+          ).then(function() {
+            setBoxScanner(size, newScanner);
+            btn.textContent = '⏹ Stop Camera';
+          }).catch(function(e) {
+            showAlert('box-alert-' + size, 'Scanner error: ' + e.message, 'error');
+            container.innerHTML = '';
+          });
+        })
+        .catch(function(e) {
+          showAlert('box-alert-' + size, 'Camera blocked: ' + e.message, 'error');
+        });
+    }
+    
+    function validateBoxQR(data) {
+      var errors = [];
+      if (!data || data.trim() === '') return { valid: false, errors: ['Empty scan data'] };
+      var slashCount = (data.match(/\//g) || []).length;
+      if (slashCount < 5) errors.push('Missing data fields (found ' + slashCount + ' separators, expected 9)');
+      if (!/^[A-Za-z]/.test(data)) errors.push('Box No should start with a letter');
+      if (data.length < 30) errors.push('Data too short (' + data.length + ' chars)');
+      if (/^\d+$/.test(data)) errors.push('Numeric only - likely barcode misread');
+      return { valid: errors.length === 0, errors: errors };
+    }
+    
+    function onBoxScan(data, size) {
+      var session = getBoxSession(size);
+      var config = BASE_CONFIG[size];
+      
+      if (!session.active) return;
+      if (session.scanSet[data]) { beep(300, 200); showAlert('box-alert-' + size, '⚠️ Duplicate scan', 'error'); return; }
+      if (session.scans.length >= config.maxBoxes) { beep(300, 200); showAlert('box-alert-' + size, '⚠️ Maximum ' + config.maxBoxes + ' boxes reached', 'error'); return; }
+      
+      var validation = validateBoxQR(data);
+      if (!validation.valid) {
+        beep(300, 300);
+        var errorMsg = '⚠️ ABNORMAL SCAN!\n\n• ' + validation.errors.join('\n• ') + '\n\nData: ' + data.substring(0, 50) + '\n\nAccept anyway?';
+        if (!confirm(errorMsg)) { showAlert('box-alert-' + size, '❌ Scan rejected', 'error'); return; }
+        showAlert('box-alert-' + size, '⚠️ Abnormal scan accepted', 'warning');
+      }
+      
+      beep(800, 100);
+      session.scanSet[data] = true;
+      session.scans.push({ boxNo: session.scans.length + 1, data: data, timestamp: new Date().toLocaleString() });
+      updateBoxUI(size);
+      showAlert('box-alert-' + size, '✓ Box ' + session.scans.length + '/' + config.maxBoxes + ' scanned', 'success');
+    }
+    
+    function removeBox(idx, size) {
+      var session = getBoxSession(size);
+      var removed = session.scans.splice(idx, 1)[0];
+      delete session.scanSet[removed.data];
+      for (var i = 0; i < session.scans.length; i++) session.scans[i].boxNo = i + 1;
+      updateBoxUI(size);
+    }
+    
+    function updateBoxUI(size) {
+      var session = getBoxSession(size);
+      document.getElementById('box-count-' + size).textContent = session.scans.length;
+      
+      var list = document.getElementById('box-list-' + size);
+      if (session.scans.length === 0) { list.innerHTML = '<div class="empty-msg">Scan boxes to begin...</div>'; return; }
+      
+      var html = '';
+      for (var i = session.scans.length - 1; i >= 0; i--) {
+        var b = session.scans[i];
+        html += '<div class="scan-item"><div class="scan-item-content"><div class="scan-item-no">Box #' + b.boxNo + '</div><div class="scan-item-data">' + b.data + '</div><div class="scan-item-time">🕐 ' + b.timestamp + '</div></div><button class="remove-btn" onclick="removeBox(' + i + ', \'' + size + '\')">×</button></div>';
+      }
+      list.innerHTML = html;
+    }
+    
+    async function submitBoxSession(size) {
+      var session = getBoxSession(size);
+      if (session.scans.length === 0) { showAlert('box-alert-' + size, 'No boxes scanned', 'error'); return; }
+      
+      var btn = document.querySelector('#box-active-view-' + size + ' .btn-success');
+      btn.disabled = true;
+      btn.textContent = '⏳ Saving...';
+      
+      stopAllCameras();
+      
+      var result = await apiCall('saveBoxBatch', { runningNo: session.runningNo, boxes: session.scans, baseSize: size });
+      
+      if (result.success) {
+        showAlert('box-alert-' + size, '✓ Saved ' + result.count + ' boxes', 'success');
+        resetBoxSession(size);
+      } else {
+        showAlert('box-alert-' + size, 'Error: ' + result.error, 'error');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '✓ Submit';
+    }
+    
+    function cancelBoxSession(size) {
+      var session = getBoxSession(size);
+      if (session.scans.length > 0 && !confirm('Cancel? ' + session.scans.length + ' boxes will be lost.')) return;
+      stopAllCameras();
+      resetBoxSession(size);
+    }
+    
+    function resetBoxSession(size) {
+      setBoxSession(size, { active: false, runningNo: '', scans: [], scanSet: {}, baseSize: size });
+      document.getElementById('box-running-' + size).textContent = 'Tap "Start Session" to begin';
+      document.getElementById('box-running-' + size).classList.add('empty');
+      document.getElementById('box-counter-' + size).classList.add('inactive');
+      document.getElementById('box-count-' + size).textContent = '0';
+      document.getElementById('box-start-view-' + size).style.display = 'block';
+      document.getElementById('box-active-view-' + size).style.display = 'none';
+      document.getElementById('box-list-card-' + size).style.display = 'none';
+      document.getElementById('box-cam-btn-' + size).textContent = '📷 Start Camera';
+    }
+    
+    // ==================== PALLET SCAN ====================
+    async function loadPalletRunningNumbers() {
+      var select = document.getElementById('pallet-running-select');
+      select.innerHTML = '<option value="">Loading...</option>';
+      
+      var result = await apiCall('getRunningNumbers');
+      
+      if (result.success && result.data) {
+        var opts = '<option value="">-- Select Running Number --</option>';
+        for (var i = 0; i < result.data.length; i++) {
+          opts += '<option value="' + result.data[i] + '">' + result.data[i] + '</option>';
+        }
+        select.innerHTML = opts;
+      } else {
+        select.innerHTML = '<option value="">Error loading</option>';
+      }
+    }
+    
+    function onPalletRunningSelect() {
+      currentPalletRunning = document.getElementById('pallet-running-select').value;
+      var btn = document.getElementById('pallet-scan-btn');
+      btn.disabled = true;
+      btn.textContent = '▶ Start Pallet Scan';
+      btn.style.background = '';
+      
+      if (currentPalletRunning) {
+        loadBoxDataForPallet();
+      } else {
+        document.getElementById('pallet-box-info').style.display = 'none';
+        document.getElementById('pallet-box-list-card').style.display = 'none';
+        document.getElementById('saved-pallet-list').innerHTML = '<div class="empty-msg">Select a running number</div>';
+      }
+    }
+    
+    async function loadBoxDataForPallet() {
+      if (!currentPalletRunning) return;
+      
+      document.getElementById('pallet-box-info').style.display = 'block';
+      document.getElementById('pallet-box-count').textContent = '...';
+      document.getElementById('pallet-box-list-card').style.display = 'block';
+      document.getElementById('pallet-box-list').innerHTML = '<div class="empty-msg">Loading...</div>';
+      
+      var result = await apiCall('getBoxesByRunningNo', { runningNo: currentPalletRunning });
+      
+      var boxes = result.success ? result.data : [];
+      document.getElementById('pallet-box-count').textContent = boxes.length;
+      
+      var container = document.getElementById('pallet-box-list');
+      if (boxes.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No boxes</div>';
+      } else {
+        var html = '';
+        for (var i = 0; i < boxes.length; i++) {
+          html += '<div class="scan-item"><div class="scan-item-content"><div class="scan-item-no">Box #' + boxes[i].boxNo + '</div><div class="scan-item-data">' + boxes[i].boxData + '</div></div></div>';
+        }
+        container.innerHTML = html;
+      }
+      
+      checkExistingPallet();
+    }
+    
+    async function checkExistingPallet() {
+      var result = await apiCall('getPalletsByRunningNo', { runningNo: currentPalletRunning });
+      var btn = document.getElementById('pallet-scan-btn');
+      var pallets = result.success ? result.data : [];
+      
+      if (pallets && pallets.length > 0) {
+        btn.disabled = true;
+        btn.textContent = '✓ Pallet Already Scanned';
+        btn.style.background = '#10b981';
+      } else {
+        btn.disabled = false;
+        btn.textContent = '▶ Start Pallet Scan';
+        btn.style.background = '';
+      }
+      
+      loadSavedPallets(pallets);
+    }
+    
+    function loadSavedPallets(pallets) {
+      var container = document.getElementById('saved-pallet-list');
+      
+      if (!pallets || pallets.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No pallet assigned yet</div>';
+        return;
+      }
+      
+      var p = pallets[0];
+      container.innerHTML = '<div class="scan-item" style="background:#d1fae5;border-color:#10b981;"><div class="scan-item-content"><div class="scan-item-no" style="color:#065f46;">✓ Pallet Assigned</div><div class="scan-item-data">' + p.palletData + '</div><div class="scan-item-time">🕐 ' + formatTime(p.timestamp) + '</div></div></div>';
+    }
+    
+    function startPalletScan() {
+      if (!currentPalletRunning) return;
+      palletSession = { active: true, runningNo: currentPalletRunning, scans: [], scanSet: {} };
+      document.getElementById('pallet-running-select').disabled = true;
+      document.getElementById('pallet-start-view').style.display = 'none';
+      document.getElementById('pallet-active-view').style.display = 'block';
+      document.getElementById('pallet-session-card').style.display = 'block';
+      updatePalletSessionUI();
+      togglePalletCamera();
+    }
+    
+    function togglePalletCamera() {
+      var container = document.getElementById('pallet-reader');
+      var btn = document.getElementById('pallet-cam-btn');
+      
+      if (palletScanner) {
+        try { palletScanner.stop(); } catch(e) {}
+        palletScanner = null;
+        container.innerHTML = '';
+        btn.textContent = '📷 Start Camera';
+        return;
+      }
+      
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          stream.getTracks().forEach(function(track) { track.stop(); });
+          
+          container.innerHTML = '<div id="pallet-scanner-el"></div>';
+          palletScanner = new Html5Qrcode("pallet-scanner-el");
+          
+          palletScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 }, formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] },
+            function(data) { onPalletScan(data); },
+            function() {}
+          ).then(function() {
+            btn.textContent = '⏹ Stop Camera';
+          }).catch(function(e) {
+            showAlert('pallet-alert', 'Scanner error: ' + e.message, 'error');
+            container.innerHTML = '';
+          });
+        })
+        .catch(function(e) {
+          showAlert('pallet-alert', 'Camera blocked: ' + e.message, 'error');
+        });
+    }
+    
+    function onPalletScan(data) {
+      if (!palletSession.active) return;
+      if (palletSession.scans.length >= 1) { beep(300, 200); showAlert('pallet-alert', '⚠️ Only 1 pallet allowed', 'error'); return; }
+      if (palletSession.scanSet[data]) { beep(300, 200); showAlert('pallet-alert', '⚠️ Duplicate scan', 'error'); return; }
+      
+      beep(800, 100);
+      palletSession.scanSet[data] = true;
+      palletSession.scans.push({ data: data, timestamp: new Date().toLocaleString() });
+      updatePalletSessionUI();
+      showAlert('pallet-alert', '✓ Pallet scanned', 'success');
+      stopAllCameras();
+      document.getElementById('pallet-cam-btn').textContent = '📷 Start Camera';
+    }
+    
+    function removePalletScan(idx) {
+      var removed = palletSession.scans.splice(idx, 1)[0];
+      delete palletSession.scanSet[removed.data];
+      updatePalletSessionUI();
+    }
+    
+    function updatePalletSessionUI() {
+      var list = document.getElementById('pallet-session-list');
+      if (palletSession.scans.length === 0) { list.innerHTML = '<div class="empty-msg">Scan 1 pallet QR code...</div>'; return; }
+      
+      var html = '';
+      for (var i = palletSession.scans.length - 1; i >= 0; i--) {
+        var p = palletSession.scans[i];
+        html += '<div class="scan-item"><div class="scan-item-content"><div class="scan-item-no">🎯 Pallet</div><div class="scan-item-data">' + p.data + '</div><div class="scan-item-time">🕐 ' + p.timestamp + '</div></div><button class="remove-btn" onclick="removePalletScan(' + i + ')">×</button></div>';
+      }
+      list.innerHTML = html;
+    }
+    
+    async function submitPalletSession() {
+      if (palletSession.scans.length === 0) { showAlert('pallet-alert', 'No pallet scanned', 'error'); return; }
+      
+      var btn = document.querySelector('#pallet-active-view .btn-success');
+      btn.disabled = true;
+      btn.textContent = '⏳ Saving...';
+      
+      stopAllCameras();
+      
+      var result = await apiCall('savePalletScan', { runningNo: palletSession.runningNo, palletData: palletSession.scans[0].data });
+      
+      if (result.success) {
+        showAlert('pallet-alert', '✓ Pallet saved', 'success');
+        resetPalletSession();
+        if (currentPalletRunning) checkExistingPallet();
+      } else {
+        showAlert('pallet-alert', '⚠️ ' + result.error, 'error');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '✓ Submit';
+    }
+    
+    function cancelPalletSession() {
+      if (palletSession.scans.length > 0 && !confirm('Cancel?')) return;
+      stopAllCameras();
+      resetPalletSession();
+    }
+    
+    function resetPalletSession() {
+      palletSession = { active: false, runningNo: '', scans: [], scanSet: {} };
+      document.getElementById('pallet-running-select').disabled = false;
+      document.getElementById('pallet-start-view').style.display = 'block';
+      document.getElementById('pallet-active-view').style.display = 'none';
+      document.getElementById('pallet-session-card').style.display = 'none';
+      document.getElementById('pallet-cam-btn').textContent = '📷 Start Camera';
+    }
+    
+    // ==================== INVOICE ====================
+    async function loadAllPalletsForInvoice() {
+      var container = document.getElementById('all-pallets-list');
+      container.innerHTML = '<div class="empty-msg">Loading...</div>';
+      
+      var result = await apiCall('getAllPalletsForInvoice');
+      var data = result.success ? result.data : [];
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No pallets available</div>';
+        return;
+      }
+      
+      var html = '';
+      for (var i = 0; i < data.length; i++) {
+        var group = data[i];
+        html += '<div class="pallet-group"><div class="pallet-group-header"><span>📋 ' + group.runningNo + '</span><span class="badge badge-info">' + group.pallets.length + ' pallet · ' + group.boxCount + ' boxes</span></div>';
+        
+        for (var j = 0; j < group.pallets.length; j++) {
+          var p = group.pallets[j];
+          var isSelected = isPalletSelected(group.runningNo, p.palletData);
+          var isAssigned = p.invoiceNo ? true : false;
+          var itemClass = 'pallet-item' + (isAssigned ? ' assigned' : (isSelected ? ' selected' : ''));
+          
+          html += '<div class="' + itemClass + '" onclick="togglePalletSelection(\'' + group.runningNo + '\', \'' + escapeStr(p.palletData) + '\', ' + isAssigned + ')"><div class="pallet-item-header"><span class="pallet-item-no">🎯 Pallet</span>';
+          if (isAssigned) html += '<span class="pallet-item-invoice">✓ ' + p.invoiceNo + '</span>';
+          else if (isSelected) html += '<span style="color:#2563eb;font-size:12px;font-weight:600;">✓ Selected</span>';
+          html += '</div><div class="pallet-item-data">' + p.palletData + '</div></div>';
+        }
+        html += '</div>';
+      }
+      
+      container.innerHTML = html;
+      updateSelectionBar();
+    }
+    
+    function escapeStr(str) { return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"'); }
+    
+    function isPalletSelected(runningNo, palletData) {
+      for (var i = 0; i < selectedPallets.length; i++) {
+        if (selectedPallets[i].runningNo === runningNo && selectedPallets[i].palletData === palletData) return true;
+      }
+      return false;
+    }
+    
+    function togglePalletSelection(runningNo, palletData, isAssigned) {
+      if (isAssigned) return;
+      
+      var idx = -1;
+      for (var i = 0; i < selectedPallets.length; i++) {
+        if (selectedPallets[i].runningNo === runningNo && selectedPallets[i].palletData === palletData) { idx = i; break; }
+      }
+      
+      if (idx >= 0) selectedPallets.splice(idx, 1);
+      else selectedPallets.push({ runningNo: runningNo, palletData: palletData });
+      
+      loadAllPalletsForInvoice();
+    }
+    
+    function updateSelectionBar() {
+      document.getElementById('selected-count').textContent = selectedPallets.length;
+      if (selectedPallets.length > 0) document.getElementById('invoice-selection-bar').classList.add('show');
+      else document.getElementById('invoice-selection-bar').classList.remove('show');
+    }
+    
+    function clearSelection() { selectedPallets = []; loadAllPalletsForInvoice(); }
+    
+    async function assignInvoice() {
+      var invoiceNo = document.getElementById('invoice-no-input').value.trim();
+      var poNo = document.getElementById('po-no-input').value.trim();
+      
+      if (!invoiceNo) { showAlert('invoice-alert', 'Enter invoice number', 'error'); return; }
+      if (selectedPallets.length === 0) { showAlert('invoice-alert', 'Select at least one pallet', 'error'); return; }
+      
+      var btn = document.querySelector('#invoice-selection-bar .btn-success');
+      btn.disabled = true;
+      btn.textContent = '⏳ Assigning...';
+      
+      var result = await apiCall('assignInvoice', { invoiceNo: invoiceNo, poNo: poNo, selectedPallets: selectedPallets });
+      
+      if (result.success) {
+        showAlert('invoice-alert', '✓ Assigned ' + result.count + ' pallets', 'success');
+        document.getElementById('invoice-no-input').value = '';
+        document.getElementById('po-no-input').value = '';
+        selectedPallets = [];
+        loadAllPalletsForInvoice();
+        loadInvoiceSummary();
+      } else {
+        showAlert('invoice-alert', result.message || result.error, 'error');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '✓ Assign Invoice';
+    }
+    
+    async function loadInvoiceSummary() {
+      var container = document.getElementById('invoice-summary-list');
+      container.innerHTML = '<div class="empty-msg">Loading...</div>';
+      
+      var result = await apiCall('getInvoiceSummary');
+      var list = result.success ? result.data : [];
+      
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No invoices yet</div>';
+        return;
+      }
+      
+      var html = '';
+      for (var i = 0; i < list.length; i++) {
+        var inv = list[i];
+        html += '<div class="invoice-card"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;font-size:16px;">' + inv.invoiceNo + '</span><span class="badge badge-success">' + inv.palletCount + ' pallets</span></div>';
+        if (inv.poNo) html += '<div style="font-size:13px;color:#64748b;margin-top:4px;">PO: ' + inv.poNo + '</div>';
+        html += '<div style="font-size:13px;color:#64748b;margin-top:4px;">Running: ' + inv.runningNos.join(', ') + '</div>';
+        html += '<div class="scan-item-time" style="margin-top:4px;">🕐 ' + formatTime(inv.assignedDate) + '</div></div>';
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('App initialized');
+      if (API_URL === 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE') {
+        alert('⚠️ Please set your API_URL in the script!\n\nEdit the HTML file and replace:\nYOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE\n\nwith your Apps Script deployment URL.');
+      }
+    });
+  </script>
+</body>
+</html>
