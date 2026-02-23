@@ -491,7 +491,7 @@
   <script>
     // ==================== CONFIGURATION ====================
     // IMPORTANT: Replace this with your Apps Script deployment URL
-    var API_URL = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE';
+    var API_URL = 'https://script.google.com/macros/s/AKfycbyBXTgtjVhzUeHOO4nsW-XOXZZh5MJZeCewc4o2uBDYVspMMf1cqP16z1K_mBS_agw/exec';
     
     // ==================== STATE ====================
     var boxScanner35 = null;
@@ -514,14 +514,23 @@
       params.action = action;
       
       try {
-        var response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(params)
+        // Use GET with URL parameters (Apps Script handles CORS better with GET)
+        var url = API_URL + '?data=' + encodeURIComponent(JSON.stringify(params));
+        
+        var response = await fetch(url, {
+          method: 'GET',
+          redirect: 'follow'
         });
         
-        var result = await response.json();
-        return result;
+        var text = await response.text();
+        
+        // Try to parse JSON
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error('JSON parse error:', text);
+          return { success: false, error: 'Invalid response from server' };
+        }
       } catch (err) {
         console.error('API Error:', err);
         return { success: false, error: err.message };
